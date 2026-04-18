@@ -17,8 +17,8 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt update
-        sudo apt install -y lcov gcovr
-        pip install --user gcovr
+        sudo apt install -y lcov
+        pip install gcovr
         
     - name: Configure with coverage flags
       run: |
@@ -35,23 +35,13 @@ jobs:
         cd build
         ./tests/run_tests
         
-    - name: Generate lcov report
+    - name: Generate coverage report
       run: |
         cd build
-        lcov --capture --directory . --output-file coverage.info
-        lcov --remove coverage.info \
-          '/usr/*' \
-          '*/tests/*' \
-          '*/build/_deps/*' \
-          '*/build/CMakeFiles/*' \
-          '*/googletest/*' \
-          '*/mock_account.h' \
-          --output-file coverage.info
-        lcov --list coverage.info
+        gcovr --root .. --exclude '.*/tests/.*' --exclude '.*/build/.*' --exclude '.*/_deps/.*' --exclude '.*/googletest/.*' --exclude '.*/CMakeFiles/.*' --exclude '.*/mock_account.h' --coveralls coverage.json
         
     - name: Send to Coveralls
       uses: coverallsapp/github-action@v2
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        file: build/coverage.info
-        format: lcov
+        file: build/coverage.json
