@@ -37,20 +37,19 @@ jobs:
         
     - name: Generate coverage report
       run: |
-        gcovr --root . \
-              --filter '.*banking/.*' \
+        cd build
+        gcovr --root .. \
               --exclude '.*/tests/.*' \
               --exclude '.*/build/.*' \
               --exclude '.*/_deps/.*' \
               --exclude '.*/googletest/.*' \
               --exclude '.*/CMakeFiles/.*' \
               --exclude '.*/mock_account.h' \
-              --gcov-executable 'gcov' \
               --coveralls coverage.json
         
     - name: Send to Coveralls
       uses: coverallsapp/github-action@v2
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        file: coverage.json
+        file: build/coverage.json
         format: coveralls
