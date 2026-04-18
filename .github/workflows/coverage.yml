@@ -35,21 +35,23 @@ jobs:
         cd build
         ./tests/run_tests
         
-    - name: Generate coverage report
+    - name: Generate lcov report
       run: |
         cd build
-        gcovr --root .. \
-              --exclude '.*/tests/.*' \
-              --exclude '.*/build/.*' \
-              --exclude '.*/_deps/.*' \
-              --exclude '.*/googletest/.*' \
-              --exclude '.*/CMakeFiles/.*' \
-              --exclude '.*/mock_account.h' \
-              --coveralls coverage.json
+        lcov --capture --directory . --output-file coverage.info
+        lcov --remove coverage.info \
+          '/usr/*' \
+          '*/tests/*' \
+          '*/build/_deps/*' \
+          '*/build/CMakeFiles/*' \
+          '*/googletest/*' \
+          '*/mock_account.h' \
+          --output-file coverage.info
+        lcov --list coverage.info
         
     - name: Send to Coveralls
       uses: coverallsapp/github-action@v2
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        file: build/coverage.json
-        format: json
+        file: build/coverage.info
+        format: lcov
