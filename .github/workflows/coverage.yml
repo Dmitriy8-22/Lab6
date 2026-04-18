@@ -38,7 +38,7 @@ jobs:
     - name: Generate coverage report
       run: |
         cd build
-        gcovr --root .. --exclude '.*/tests/.*' --exclude '.*/build/.*' --exclude '.*/_deps/.*' --exclude '.*/googletest/.*' --exclude '.*/CMakeFiles/.*' --exclude '.*/mock_account.h' --coveralls coverage.json
+        gcovr --root .. --exclude '.*/tests/.*' --exclude '.*/build/.*' --coveralls coverage.json
         
     - name: Send to Coveralls
       uses: coverallsapp/github-action@v2
