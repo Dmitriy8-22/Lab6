@@ -36,10 +36,12 @@ jobs:
         ./tests/run_tests
         
     - name: Generate coverage report
-      uses: threeal/gcovr-action@v1.0.0
+      run: |
+        cd build
+        gcovr --root .. --exclude '.*/tests/.*' --exclude '.*/build/.*' --coveralls coverage.json
+        
+    - name: Send to Coveralls
+      uses: coverallsapp/github-action@v2
       with:
-        root: banking
-        coverage-path: build
-        exclude: '.*/tests/.*|.*/build/.*'
-        coveralls-send: true
-        coveralls-repo-token: ${{ secrets.COVERALLS_REPO_TOKEN }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        file: build/coverage.json
