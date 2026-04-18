@@ -1,1 +1,0 @@
-/usr/bin/c++ --coverage -g -O0 CMakeFiles/run_tests.dir/test_account.cpp.o CMakeFiles/run_tests.dir/test_transaction.cpp.o CMakeFiles/run_tests.dir/__/Account.cpp.o CMakeFiles/run_tests.dir/__/Transaction.cpp.o -o run_tests  /usr/lib/x86_64-linux-gnu/libgtest.a /usr/lib/x86_64-linux-gnu/libgtest_main.a /usr/lib/x86_64-linux-gnu/libgmock.a -lpthread 

@@ -1,8 +1,0 @@
-/home/vboxuser/Lab5/banking/build/CMakeFiles/banking.dir
-/home/vboxuser/Lab5/banking/build/CMakeFiles/test.dir
-/home/vboxuser/Lab5/banking/build/CMakeFiles/edit_cache.dir
-/home/vboxuser/Lab5/banking/build/CMakeFiles/rebuild_cache.dir
-/home/vboxuser/Lab5/banking/build/tests/CMakeFiles/run_tests.dir
-/home/vboxuser/Lab5/banking/build/tests/CMakeFiles/test.dir
-/home/vboxuser/Lab5/banking/build/tests/CMakeFiles/edit_cache.dir
-/home/vboxuser/Lab5/banking/build/tests/CMakeFiles/rebuild_cache.dir

@@ -23,7 +23,7 @@ jobs:
     - name: Configure with coverage flags
       run: |
         mkdir -p build && cd build
-        cmake -DCMAKE_CXX_FLAGS="--coverage -g -O0" ..
+        cmake -DCMAKE_CXX_FLAGS="--coverage -g -O0" ../banking
         
     - name: Build
       run: |
@@ -35,10 +35,10 @@ jobs:
         cd build
         ./tests/run_tests
         
-    - name: Generate coverage report for Coveralls
+    - name: Generate coverage report
       uses: threeal/gcovr-action@v1.0.0
       with:
-        root: .
+        root: banking
         coverage-path: build
         exclude: '.*/tests/.*|.*/build/.*'
         coveralls-send: true
