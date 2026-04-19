@@ -35,27 +35,19 @@ jobs:
         cd build
         ./tests/run_tests
         
-    - name: Generate coverage.json for Coveralls
+    - name: Generate coverage from root
       run: |
-        cd build
-        gcovr --root .. \
-              --filter '.*/banking/.*\.cpp$' \
-              --exclude-unreachable-branches \
+        gcovr --root . \
+              --filter 'banking/.*\.cpp$' \
+              --exclude 'tests/.*' \
+              --exclude 'build/_deps/.*' \
+              --exclude 'build/CMakeFiles/.*' \
               --print-summary \
               --coveralls coverage.json
-        
-    - name: Debug coverage.json
-      run: |
-        cd build
-        echo "=== coverage.json size ==="
-        ls -la coverage.json
-        echo "=== Looking for banking files in coverage.json ==="
-        grep -o '"name":"[^"]*"' coverage.json | head -20
         
     - name: Send to Coveralls
       uses: coverallsapp/github-action@v2
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        file: build/coverage.json
+        file: coverage.json
         format: coveralls
-      continue-on-error: true
