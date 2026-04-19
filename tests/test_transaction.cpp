@@ -2,7 +2,7 @@
 #include <gmock/gmock.h>
 #include <stdexcept>
 
-#include "../Transaction.h"
+#include "Transaction.h"
 #include "mock_account.h"
 
 using ::testing::Return;

@@ -1,9 +1,16 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.14)
+
 project(banking)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(SOURCES Account.cpp Transaction.cpp)
-add_library(banking STATIC ${SOURCES})
+
+add_library(banking STATIC
+    Account.cpp
+    Transaction.cpp
+)
+
 target_include_directories(banking PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
 enable_testing()
 add_subdirectory(tests)

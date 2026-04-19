@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <stdexcept>
-#include "../Account.h"
+#include "Account.h"
 
 TEST(AccountTest, ConstructorSetsValues) {
     Account acc(5, 1000);

@@ -1,0 +1,47 @@
+cmake_minimum_required(VERSION 3.14)
+
+project(banking_tests)
+
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+include(FetchContent)
+
+FetchContent_Declare(
+    googletest
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG release-1.11.0
+)
+
+set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS ON)
+FetchContent_MakeAvailable(googletest)
+
+target_link_libraries(gtest_main INTERFACE banking)
+
+add_executable(run_tests
+    main.cpp
+    test_account.cpp
+    test_transaction.cpp
+    mock_account.h
+)
+
+target_include_directories(run_tests PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}    
+    ${CMAKE_CURRENT_SOURCE_DIR}/../banking  
+)
+
+target_link_libraries(run_tests
+    banking                     
+    gtest_main                   
+    gmock                        
+    pthread
+)
+
+if(ENABLE_COVERAGE)
+    target_compile_options(run_tests PRIVATE --coverage -g -O0)
+    target_link_options(run_tests PRIVATE --coverage)
+endif()
+
+include(GoogleTest)
+gtest_discover_tests(run_tests)
+
