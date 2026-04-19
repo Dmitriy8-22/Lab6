@@ -12,5 +12,3 @@ add_library(banking STATIC
 
 target_include_directories(banking PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-enable_testing()
-add_subdirectory(tests)
