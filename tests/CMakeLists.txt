@@ -13,10 +13,11 @@ FetchContent_Declare(
     GIT_TAG release-1.11.0
 )
 
-set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS ON)
-FetchContent_MakeAvailable(googletest)
+# Отключаем экспорт для Google Test
+set(INSTALL_GTEST OFF CACHE BOOL "Disable Google Test installation" FORCE)
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
-target_link_libraries(gtest_main INTERFACE banking)
+FetchContent_MakeAvailable(googletest)
 
 add_executable(run_tests
     main.cpp
@@ -26,14 +27,14 @@ add_executable(run_tests
 )
 
 target_include_directories(run_tests PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}    
-    ${CMAKE_CURRENT_SOURCE_DIR}/../banking  
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/../banking
 )
 
 target_link_libraries(run_tests
-    banking                     
-    gtest_main                   
-    gmock                        
+    banking
+    gtest_main
+    gmock
     pthread
 )
 
@@ -44,4 +45,3 @@ endif()
 
 include(GoogleTest)
 gtest_discover_tests(run_tests)
-
