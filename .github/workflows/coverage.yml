@@ -34,32 +34,32 @@ jobs:
       run: |
         cd build
         ./tests/run_tests
+        echo "Tests exit code: $?"
         
-    - name: Debug - list gcda files
+    - name: Debug - find gcda files
       run: |
         cd build
-        find . -name "*.gcda" -type f
-        find . -name "*.gcno" -type f
+        echo "=== Looking for .gcda files ==="
+        find . -name "*.gcda" -type f || echo "No .gcda files found!"
+        echo "=== Looking for .gcno files ==="
+        find . -name "*.gcno" -type f || echo "No .gcno files found!"
+        echo "=== Build directory structure ==="
+        ls -la banking/
+        ls -la tests/
         
-    - name: Generate coverage report
+    - name: Generate coverage report directly
       run: |
         cd build
+        echo "=== Running gcovr ==="
+        gcovr --root .. --print-summary
+        echo "=== Generating coverage.json ==="
         gcovr --root .. \
               --filter '.*/banking/.*\.cpp$' \
-              --exclude '.*/tests/.*' \
-              --exclude '.*/build/.*' \
-              --exclude '.*/_deps/.*' \
-              --exclude '.*/googletest/.*' \
-              --exclude '.*/CMakeFiles/.*' \
-              --exclude '.*/mock_account.h' \
-              --print-summary \
-              --html --html-details coverage.html \
               --coveralls coverage.json
-        
-    - name: Show coverage.json content
-      run: |
-        cd build
-        cat coverage.json | head -50 || echo "coverage.json is empty or not found"
+        echo "=== coverage.json size ==="
+        ls -la coverage.json || echo "coverage.json not created!"
+        echo "=== coverage.json content (first 20 lines) ==="
+        head -20 coverage.json || echo "coverage.json is empty!"
         
     - name: Send to Coveralls
       uses: coverallsapp/github-action@v2
