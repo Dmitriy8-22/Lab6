@@ -25,10 +25,7 @@ add_executable(run_tests
     mock_account.h
 )
 
-target_include_directories(run_tests PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/../banking
-)
+target_include_directories(run_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(run_tests
     banking
