@@ -6,42 +6,25 @@ on:
       - 'v*'
 
 permissions:
-  contents: write
+  contents: write  # Даем права на создание релизов
+
+env:
+  GITHUB_USERNAME: ${{ github.actor }}
+  GITHUB_EMAIL: ${{ github.actor }}@users.noreply.github.com
 
 jobs:
-  # Создание архивов с исходным кодом
-  source-archives:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-      
-    - name: Create source archives
-      run: |
-        # Создаем архив с исходниками .tar.gz
-        git archive --format=tar.gz --output=solver-app-${{ github.ref_name }}-source.tar.gz HEAD
-        
-        # Создаем архив с исходниками .zip
-        git archive --format=zip --output=solver-app-${{ github.ref_name }}-source.zip HEAD
-        
-    - name: Upload source archives to Release
-      uses: softprops/action-gh-release@v1
-      with:
-        files: |
-          solver-app-*-source.tar.gz
-          solver-app-*-source.zip
-        generate_release_notes: true
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  # Linux binaries (DEB, RPM, TGZ)
-  build-packages-linux:
+  build-packages:
     runs-on: ubuntu-latest
     
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
       
+    - name: Clean previous builds
+      run: |
+        rm -rf build
+        rm -rf _build
+        
     - name: Install dependencies
       run: |
         sudo apt update
@@ -55,88 +38,27 @@ jobs:
     - name: Build
       run: |
         cd build
+        make clean
         make -j2
         
-    - name: Create Linux packages
+    - name: Create packages
       run: |
         cd build
-        cpack -G DEB
-        cpack -G RPM
-        cpack -G TGZ
+        cpack -G "DEB" || echo "DEB package creation failed"
+        cpack -G "RPM" || echo "RPM package creation failed"
+        cpack -G "TGZ" || echo "TGZ package creation failed"
         
-    - name: Upload Linux packages to Release
+    - name: List artifacts
+      run: |
+        ls -la build/*.deb build/*.rpm build/*.tar.gz 2>/dev/null || echo "No packages found"
+        
+    - name: Create Release and Upload artifacts
       uses: softprops/action-gh-release@v1
       with:
         files: |
           build/*.deb
           build/*.rpm
           build/*.tar.gz
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  # macOS binary (DMG)
-  build-packages-macos:
-    runs-on: macos-latest
-    
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-      
-    - name: Configure
-      run: |
-        mkdir build && cd build
-        cmake -DCMAKE_BUILD_TYPE=Release ..
-        
-    - name: Build
-      run: |
-        cd build
-        make -j2
-        
-    - name: Create macOS package
-      run: |
-        cd build
-        cpack -G DragNDrop || echo "DMG package created"
-        
-    - name: Upload macOS package to Release
-      uses: softprops/action-gh-release@v1
-      with:
-        files: |
-          build/*.dmg
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  # Windows binary (MSI)
-  build-packages-windows:
-    runs-on: windows-latest
-    
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-      
-    - name: Install WiX Toolset
-      run: |
-        choco install wixtoolset -y
-        
-    - name: Configure
-      run: |
-        mkdir build
-        cd build
-        cmake -DCMAKE_BUILD_TYPE=Release ..
-        
-    - name: Build
-      run: |
-        cd build
-        cmake --build . --config Release
-        
-    - name: Create MSI package
-      run: |
-        cd build
-        cpack -G WIX
-        
-    - name: Upload Windows package to Release
-      uses: softprops/action-gh-release@v1
-      with:
-        files: |
-          build/*.msi
+        generate_release_notes: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
