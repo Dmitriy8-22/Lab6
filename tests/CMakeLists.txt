@@ -5,16 +5,26 @@ project(banking_tests)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Настройка для Windows: используем /MD (динамическая CRT)
+if(MSVC)
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MD")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MDd")
+endif()
+
 include(FetchContent)
 
+# Используем более старую версию googletest
 FetchContent_Declare(
     googletest
     GIT_REPOSITORY https://github.com/google/googletest.git
-    GIT_TAG release-1.11.0
+    GIT_TAG release-1.8.1
 )
 
 set(INSTALL_GTEST OFF)
 set(gtest_force_shared_crt ON)
+
+# Отключаем сборку gtest_main и gmock_main, чтобы избежать дублирования
+set(BUILD_GMOCK ON CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(googletest)
 
@@ -29,7 +39,7 @@ target_include_directories(run_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(run_tests
     banking
-    gtest_main
+    gtest
     gmock
 )
 
