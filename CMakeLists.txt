@@ -12,5 +12,7 @@ endif()
 
 add_subdirectory(banking)
 add_subdirectory(tests)
+add_subdirectory(solver_lib)
+add_subdirectory(solver_application)
 
-
+include(CPackConfig.cmake)

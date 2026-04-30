@@ -1,0 +1,54 @@
+name: Create Release Packages
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  GITHUB_USERNAME: ${{ github.actor }}
+  GITHUB_EMAIL: ${{ github.actor }}@users.noreply.github.com
+
+jobs:
+  build-packages:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y rpm
+        
+    - name: Configure
+      run: |
+        mkdir -p build && cd build
+        cmake -DCMAKE_BUILD_TYPE=Release ..
+        
+    - name: Build
+      run: |
+        cd build
+        make -j2
+        
+    - name: Create packages
+      run: |
+        cd build
+        cpack -G "DEB"
+        cpack -G "RPM"
+        cpack -G "TGZ"
+        
+    - name: List artifacts
+      run: |
+        ls -la build/*.deb build/*.rpm build/*.tar.gz 2>/dev/null || echo "No packages found"
+        
+    - name: Upload artifacts to Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          build/*.deb
+          build/*.rpm
+          build/*.tar.gz
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
