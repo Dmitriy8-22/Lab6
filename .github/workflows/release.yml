@@ -6,25 +6,21 @@ on:
       - 'v*'
 
 permissions:
-  contents: write  # Даем права на создание релизов
+  contents: write
 
 env:
   GITHUB_USERNAME: ${{ github.actor }}
   GITHUB_EMAIL: ${{ github.actor }}@users.noreply.github.com
 
 jobs:
-  build-packages:
+  # Linux packages (DEB, RPM, TGZ)
+  build-packages-linux:
     runs-on: ubuntu-latest
     
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
       
-    - name: Clean previous builds
-      run: |
-        rm -rf build
-        rm -rf _build
-        
     - name: Install dependencies
       run: |
         sudo apt update
@@ -38,21 +34,16 @@ jobs:
     - name: Build
       run: |
         cd build
-        make clean
         make -j2
         
-    - name: Create packages
+    - name: Create Linux packages
       run: |
         cd build
-        cpack -G "DEB" || echo "DEB package creation failed"
-        cpack -G "RPM" || echo "RPM package creation failed"
-        cpack -G "TGZ" || echo "TGZ package creation failed"
+        cpack -G DEB
+        cpack -G RPM
+        cpack -G TGZ
         
-    - name: List artifacts
-      run: |
-        ls -la build/*.deb build/*.rpm build/*.tar.gz 2>/dev/null || echo "No packages found"
-        
-    - name: Create Release and Upload artifacts
+    - name: Upload Linux artifacts to Release
       uses: softprops/action-gh-release@v1
       with:
         files: |
@@ -60,5 +51,81 @@ jobs:
           build/*.rpm
           build/*.tar.gz
         generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # macOS packages (DMG)
+  build-packages-macos:
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      
+    - name: Configure
+      run: |
+        mkdir build && cd build
+        cmake -DCMAKE_BUILD_TYPE=Release ..
+        
+    - name: Build
+      run: |
+        cd build
+        make -j2
+        
+    - name: Create macOS package
+      run: |
+        cd build
+        cpack -G DragNDrop || cpack -G Bundle
+        # Переименовываем пакет, если создался Bundle вместо DragNDrop
+        if [ -f "*.dmg" ]; then
+          echo "DMG package created"
+        elif [ -f "*.bundle" ]; then
+          mv *.bundle solver-app-${{ github.ref_name }}.dmg
+        fi
+        
+    - name: Upload macOS artifact to Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          build/*.dmg
+          build/*.bundle
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Windows packages (MSI)
+  build-packages-windows:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      
+    - name: Install WiX Toolset
+      run: |
+        choco install wixtoolset -y
+        echo "C:\Program Files (x86)\WiX Toolset v3.11\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        
+    - name: Configure
+      run: |
+        mkdir build
+        cd build
+        cmake -DCMAKE_BUILD_TYPE=Release ..
+        
+    - name: Build
+      run: |
+        cd build
+        cmake --build . --config Release
+        
+    - name: Create MSI package
+      run: |
+        cd build
+        cpack -G WIX
+        
+    - name: Upload Windows artifact to Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          build/*.msi
+          build/*.exe
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
