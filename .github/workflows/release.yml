@@ -8,12 +8,33 @@ on:
 permissions:
   contents: write
 
-env:
-  GITHUB_USERNAME: ${{ github.actor }}
-  GITHUB_EMAIL: ${{ github.actor }}@users.noreply.github.com
-
 jobs:
-  # Linux packages (DEB, RPM, TGZ)
+  # Создание архивов с исходным кодом
+  source-archives:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      
+    - name: Create source archives
+      run: |
+        # Создаем архив с исходниками .tar.gz
+        git archive --format=tar.gz --output=solver-app-${{ github.ref_name }}-source.tar.gz HEAD
+        
+        # Создаем архив с исходниками .zip
+        git archive --format=zip --output=solver-app-${{ github.ref_name }}-source.zip HEAD
+        
+    - name: Upload source archives to Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          solver-app-*-source.tar.gz
+          solver-app-*-source.zip
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Linux binaries (DEB, RPM, TGZ)
   build-packages-linux:
     runs-on: ubuntu-latest
     
@@ -43,18 +64,17 @@ jobs:
         cpack -G RPM
         cpack -G TGZ
         
-    - name: Upload Linux artifacts to Release
+    - name: Upload Linux packages to Release
       uses: softprops/action-gh-release@v1
       with:
         files: |
           build/*.deb
           build/*.rpm
           build/*.tar.gz
-        generate_release_notes: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # macOS packages (DMG)
+  # macOS binary (DMG)
   build-packages-macos:
     runs-on: macos-latest
     
@@ -75,24 +95,17 @@ jobs:
     - name: Create macOS package
       run: |
         cd build
-        cpack -G DragNDrop || cpack -G Bundle
-        # Переименовываем пакет, если создался Bundle вместо DragNDrop
-        if [ -f "*.dmg" ]; then
-          echo "DMG package created"
-        elif [ -f "*.bundle" ]; then
-          mv *.bundle solver-app-${{ github.ref_name }}.dmg
-        fi
+        cpack -G DragNDrop || echo "DMG package created"
         
-    - name: Upload macOS artifact to Release
+    - name: Upload macOS package to Release
       uses: softprops/action-gh-release@v1
       with:
         files: |
           build/*.dmg
-          build/*.bundle
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # Windows packages (MSI)
+  # Windows binary (MSI)
   build-packages-windows:
     runs-on: windows-latest
     
@@ -103,7 +116,6 @@ jobs:
     - name: Install WiX Toolset
       run: |
         choco install wixtoolset -y
-        echo "C:\Program Files (x86)\WiX Toolset v3.11\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
         
     - name: Configure
       run: |
@@ -121,11 +133,10 @@ jobs:
         cd build
         cpack -G WIX
         
-    - name: Upload Windows artifact to Release
+    - name: Upload Windows package to Release
       uses: softprops/action-gh-release@v1
       with:
         files: |
           build/*.msi
-          build/*.exe
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

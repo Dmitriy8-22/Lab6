@@ -1,6 +1,5 @@
 include(InstallRequiredSystemLibraries)
 
-# Контактная информация (обязательна для DEB и RPM)
 set(CPACK_PACKAGE_CONTACT " <>")
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "")
 
@@ -15,10 +14,17 @@ set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Quadratic equation solver application wit
 set(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE)
 set(CPACK_RESOURCE_FILE_README ${CMAKE_CURRENT_SOURCE_DIR}/README.md)
 
-# Компоненты для упаковки
-set(CPACK_COMPONENTS_ALL applications libraries)
+# Включаем все компоненты
+set(CPACK_COMPONENTS_ALL applications libraries headers)
 set(CPACK_COMPONENT_APPLICATIONS_DISPLAY_NAME "Solver Application")
-set(CPACK_COMPONENT_LIBRARIES_DISPLAY_NAME "Solver and Formatter Libraries")
+set(CPACK_COMPONENT_LIBRARIES_DISPLAY_NAME "Libraries")
+set(CPACK_COMPONENT_HEADERS_DISPLAY_NAME "Header Files")
+
+# Устанавливаем компонент applications как основной
+set(CPACK_DEB_COMPONENT_INSTALL ON)
+set(CPACK_RPM_COMPONENT_INSTALL ON)
+set(CPACK_WIX_COMPONENT_INSTALL ON)
+set(CPACK_DMG_COMPONENT_INSTALL ON)
 
 # RPM package
 set(CPACK_RPM_PACKAGE_NAME "solver-app")
@@ -32,15 +38,14 @@ set(CPACK_DEBIAN_PACKAGE_NAME "solver-app")
 set(CPACK_DEBIAN_PACKAGE_PREDEPENDS "cmake >= 3.14")
 set(CPACK_DEBIAN_PACKAGE_RELEASE 1)
 
-include(CPack)
-
 # macOS DragNDrop settings
-set(CPACK_DMG_VOLUME_NAME "Solver App ")
+set(CPACK_DMG_VOLUME_NAME "Solver App ${CPACK_PACKAGE_VERSION}")
 set(CPACK_DMG_FORMAT "UDBZ")
-set(CPACK_DMG_BACKGROUND_IMAGE "")
 
 # Windows WIX settings
 set(CPACK_WIX_UPGRADE_GUID "12345678-1234-1234-1234-123456789abc")
 set(CPACK_WIX_PRODUCT_NAME "Solver Application")
-set(CPACK_WIX_MANUFACTURER "")
+set(CPACK_WIX_MANUFACTURER "${GITHUB_USERNAME}")
 set(CPACK_WIX_INSTALL_SCOPE "perMachine")
+
+include(CPack)
