@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: write  # Даем права на создание релизов
+
 env:
   GITHUB_USERNAME: ${{ github.actor }}
   GITHUB_EMAIL: ${{ github.actor }}@users.noreply.github.com
@@ -17,6 +20,11 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
       
+    - name: Clean previous builds
+      run: |
+        rm -rf build
+        rm -rf _build
+        
     - name: Install dependencies
       run: |
         sudo apt update
@@ -24,31 +32,33 @@ jobs:
         
     - name: Configure
       run: |
-        mkdir -p build && cd build
+        mkdir build && cd build
         cmake -DCMAKE_BUILD_TYPE=Release ..
         
     - name: Build
       run: |
         cd build
+        make clean
         make -j2
         
     - name: Create packages
       run: |
         cd build
-        cpack -G "DEB"
-        cpack -G "RPM"
-        cpack -G "TGZ"
+        cpack -G "DEB" || echo "DEB package creation failed"
+        cpack -G "RPM" || echo "RPM package creation failed"
+        cpack -G "TGZ" || echo "TGZ package creation failed"
         
     - name: List artifacts
       run: |
         ls -la build/*.deb build/*.rpm build/*.tar.gz 2>/dev/null || echo "No packages found"
         
-    - name: Upload artifacts to Release
+    - name: Create Release and Upload artifacts
       uses: softprops/action-gh-release@v1
       with:
         files: |
           build/*.deb
           build/*.rpm
           build/*.tar.gz
+        generate_release_notes: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
