@@ -1,6 +1,5 @@
 #include <iostream>
 
-#include "formatter_ex.h"
 #include "solver.h"
 
 int main()
@@ -18,14 +17,13 @@ int main()
     {
         solve(a, b, c, x1, x2);
 
-        formatter(std::cout, "x1 = " + std::to_string(x1));
-        formatter(std::cout, "x2 = " + std::to_string(x2));
+        std::cout << "x1 = " << x1 << std::endl;
+        std::cout << "x2 = " << x2 << std::endl;
     }
     catch (const std::logic_error& ex)
     {
-        formatter(std::cout, ex.what());
+        std::cout << ex.what() << std::endl;
     }
 
     return 0;
 }
-  
