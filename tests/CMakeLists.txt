@@ -31,8 +31,12 @@ target_link_libraries(run_tests
     banking
     gtest_main
     gmock
-    pthread
 )
+
+# Windows не нуждается в pthread
+if(NOT WIN32)
+    target_link_libraries(run_tests pthread)
+endif()
 
 if(ENABLE_COVERAGE)
     target_compile_options(run_tests PRIVATE --coverage -g -O0)
@@ -41,4 +45,3 @@ endif()
 
 include(GoogleTest)
 gtest_discover_tests(run_tests)
-
