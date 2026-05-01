@@ -41,4 +41,3 @@ endif()
 
 include(GoogleTest)
 gtest_discover_tests(run_tests)
-почему с такими тестами все работало, а сейчас не работает
