@@ -7,11 +7,18 @@ add_executable(solver_app equation.cpp)
 
 target_link_libraries(solver_app PRIVATE solver formatter_ex)
 
-# Установка с явным указанием компонента
-install(TARGETS solver_app
-    RUNTIME DESTINATION bin
-    COMPONENT applications
-)
+# Явная установка файла для Windows
+if(WIN32)
+    install(FILES $<TARGET_FILE:solver_app>
+        DESTINATION bin
+        COMPONENT applications
+    )
+else()
+    install(TARGETS solver_app
+        RUNTIME DESTINATION bin
+        COMPONENT applications
+    )
+endif()
 
 if(ENABLE_COVERAGE)
     target_compile_options(solver_app PRIVATE --coverage -g -O0)
