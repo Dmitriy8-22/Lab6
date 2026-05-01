@@ -27,13 +27,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - run: sudo apt update && sudo apt install -y rpm
-    - run: mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release ..
-    - run: cd build && make -j2
-    - run: cd build && cpack -G DEB && cpack -G RPM && cpack -G TGZ
+    - name: Install dependencies
+      run: sudo apt update && sudo apt install -y rpm
+    - name: Configure
+      run: mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release ..
+    - name: Build
+      run: cd build && make -j2
+    - name: Create Linux packages
+      run: |
+        cd build
+        cpack -G DEB
+        cpack -G RPM
+        cpack -G TGZ
     - uses: softprops/action-gh-release@v1
       with:
-        files: build/*.deb build/*.rpm build/*.tar.gz
+        files: |
+          build/*.deb
+          build/*.rpm
+          build/*.tar.gz
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -42,9 +53,12 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - uses: lukka/get-cmake@latest
-    - run: mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release ..
-    - run: cd build && make -j2
-    - run: cd build && cpack -G DragNDrop
+    - name: Configure
+      run: mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release ..
+    - name: Build
+      run: cd build && make -j2
+    - name: Create macOS package
+      run: cd build && cpack -G DragNDrop
     - uses: softprops/action-gh-release@v1
       with:
         files: build/*.dmg
@@ -56,14 +70,18 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - uses: lukka/get-cmake@latest
-    - name: Install WiX Toolset
-      run: choco install wixtoolset -y
-    - run: mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release ..
-    - run: cd build && cmake --build . --config Release
-    - name: Create MSI package
-      run: cd build && cpack -G WIX
+    - name: Configure
+      run: mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release ..
+    - name: Build
+      run: cd build && cmake --build . --config Release
+    - name: Create ZIP package
+      shell: pwsh
+      run: |
+        New-Item -ItemType Directory -Force -Path package/bin
+        Copy-Item build/solver_application/Release/solver_app.exe package/bin/
+        Compress-Archive -Path package/* -DestinationPath solver-app-${{ github.ref_name }}-windows.zip
     - uses: softprops/action-gh-release@v1
       with:
-        files: build/*.msi
+        files: solver-app-*-windows.zip
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
