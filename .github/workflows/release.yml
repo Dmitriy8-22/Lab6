@@ -27,7 +27,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - uses: lukka/get-cmake@latest
     - run: sudo apt update && sudo apt install -y rpm
     - run: mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release ..
     - run: cd build && make -j2
@@ -42,10 +41,23 @@ jobs:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v3
-    - uses: lukka/get-cmake@latest
-    - run: mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release ..
-    - run: cd build && make -j2
-    - run: cd build && cpack -G DragNDrop
+    - name: Install CMake
+      run: |
+        brew update
+        brew install cmake
+        # Находим правильный путь к CMake
+        CMAKE_PATH=$(brew --prefix cmake)
+        echo "$CMAKE_PATH/bin" >> $GITHUB_PATH
+        echo "CMake installed at: $CMAKE_PATH"
+        cmake --version
+    - name: Configure
+      run: |
+        mkdir build && cd build
+        cmake -DCMAKE_BUILD_TYPE=Release ..
+    - name: Build
+      run: cd build && make -j2
+    - name: Create DMG
+      run: cd build && cpack -G DragNDrop
     - uses: softprops/action-gh-release@v1
       with:
         files: build/*.dmg
@@ -56,7 +68,6 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v3
-    - uses: lukka/get-cmake@latest
     - name: Install WiX Toolset
       run: choco install wixtoolset -y
     - run: mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release ..
