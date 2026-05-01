@@ -41,14 +41,20 @@ jobs:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Install latest CMake
+    - name: Install and use latest CMake
       run: |
         brew update
-        brew install cmake
-        brew link --overwrite cmake
-    - run: mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release ..
-    - run: cd build && make -j2
-    - run: cd build && cpack -G DragNDrop
+        brew upgrade cmake || brew install cmake
+        echo "/usr/local/opt/cmake/bin" >> $GITHUB_PATH
+        /usr/local/opt/cmake/bin/cmake --version
+    - name: Configure with new CMake
+      run: |
+        mkdir build && cd build
+        /usr/local/opt/cmake/bin/cmake -DCMAKE_BUILD_TYPE=Release ..
+    - name: Build
+      run: cd build && make -j2
+    - name: Create DMG
+      run: cd build && /usr/local/opt/cmake/bin/cpack -G DragNDrop
     - uses: softprops/action-gh-release@v1
       with:
         files: build/*.dmg
