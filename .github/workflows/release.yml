@@ -69,19 +69,33 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v3
-    - uses: lukka/get-cmake@latest
+    - name: Install WiX Toolset
+      run: |
+        choco install wixtoolset -y
+        echo "C:\Program Files (x86)\WiX Toolset v3.11\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
     - name: Configure
       run: mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release ..
     - name: Build
       run: cd build && cmake --build . --config Release
-    - name: Create ZIP package
+    - name: Create MSI package with logging
       shell: pwsh
       run: |
-        New-Item -ItemType Directory -Force -Path package/bin
-        Copy-Item build/solver_application/Release/solver_app.exe package/bin/
-        Compress-Archive -Path package/* -DestinationPath solver-app-${{ github.ref_name }}-windows.zip
+        cd build
+        cpack -G WIX 2>&1 | Out-String | Write-Host
+        Write-Host "=== Checking for WiX log ==="
+        $logPath = "_CPack_Packages/win64/WIX/wix.log"
+        if (Test-Path $logPath) {
+          Write-Host "=== WiX log content ==="
+          Get-Content $logPath | Write-Host
+        } else {
+          Write-Host "WiX log not found at: $logPath"
+          Get-ChildItem -Recurse -Filter "*.log" | ForEach-Object {
+            Write-Host "Found log: $($_.FullName)"
+            Get-Content $_.FullName | Write-Host
+          }
+        }
     - uses: softprops/action-gh-release@v1
       with:
-        files: solver-app-*-windows.zip
+        files: build/*.msi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
