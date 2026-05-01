@@ -14,6 +14,9 @@ set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Quadratic equation solver application wit
 set(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE)
 set(CPACK_RESOURCE_FILE_README ${CMAKE_CURRENT_SOURCE_DIR}/README.md)
 
+# Компоненты для установки
+set(CPACK_COMPONENTS_ALL applications)
+
 # RPM package
 set(CPACK_RPM_PACKAGE_NAME "solver-app")
 set(CPACK_RPM_PACKAGE_LICENSE "MIT")
@@ -30,11 +33,10 @@ set(CPACK_DEBIAN_PACKAGE_RELEASE 1)
 set(CPACK_DMG_VOLUME_NAME "Solver App ${CPACK_PACKAGE_VERSION}")
 set(CPACK_DMG_FORMAT "UDBZ")
 
-# Windows WIX settings - убираем требование лицензии
+# Windows WIX settings
 set(CPACK_WIX_PRODUCT_NAME "Solver Application")
 set(CPACK_WIX_MANUFACTURER "${GITHUB_USERNAME}")
 set(CPACK_WIX_INSTALL_SCOPE "perMachine")
-# Отключаем файл лицензии
-set(CPACK_WIX_LICENSE_RTF "")
+set(CPACK_WIX_UPGRADE_GUID "2A185A5D-0B90-44EC-8642-9DDB1B581CF4")
 
 include(CPack)
