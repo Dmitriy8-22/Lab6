@@ -30,10 +30,11 @@ set(CPACK_DEBIAN_PACKAGE_RELEASE 1)
 set(CPACK_DMG_VOLUME_NAME "Solver App ${CPACK_PACKAGE_VERSION}")
 set(CPACK_DMG_FORMAT "UDBZ")
 
-# Windows WIX settings
-set(CPACK_WIX_UPGRADE_GUID "12345678-1234-1234-1234-123456789abc")
+# Windows WIX settings - убираем требование лицензии
 set(CPACK_WIX_PRODUCT_NAME "Solver Application")
 set(CPACK_WIX_MANUFACTURER "${GITHUB_USERNAME}")
 set(CPACK_WIX_INSTALL_SCOPE "perMachine")
+# Отключаем файл лицензии
+set(CPACK_WIX_LICENSE_RTF "")
 
 include(CPack)

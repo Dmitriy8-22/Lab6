@@ -7,11 +7,9 @@ add_executable(solver_app equation.cpp)
 
 target_link_libraries(solver_app PRIVATE solver formatter_ex)
 
-# Установка бинарного файла
+# Установка бинарного файла для CPack
 install(TARGETS solver_app
     RUNTIME DESTINATION bin
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
 )
 
 if(ENABLE_COVERAGE)
