@@ -5,6 +5,18 @@ project(banking_tests)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Для Windows: используем единый RuntimeLibrary
+if(MSVC)
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MD")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MDd")
+endif()
+
+# Для всех: отключаем -Werror (особенно важно для macOS)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
+    add_compile_options(-Wno-error)
+    add_compile_options(-Wno-maybe-uninitialized)
+endif()
+
 include(FetchContent)
 
 FetchContent_Declare(
@@ -31,8 +43,12 @@ target_link_libraries(run_tests
     banking
     gtest_main
     gmock
-    pthread
 )
+
+# pthread только для Unix-систем
+if(UNIX AND NOT APPLE)
+    target_link_libraries(run_tests pthread)
+endif()
 
 if(ENABLE_COVERAGE)
     target_compile_options(run_tests PRIVATE --coverage -g -O0)
@@ -41,4 +57,3 @@ endif()
 
 include(GoogleTest)
 gtest_discover_tests(run_tests)
-

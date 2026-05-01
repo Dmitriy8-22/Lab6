@@ -6,59 +6,66 @@ on:
       - 'v*'
 
 permissions:
-  contents: write  # Даем права на создание релизов
-
-env:
-  GITHUB_USERNAME: ${{ github.actor }}
-  GITHUB_EMAIL: ${{ github.actor }}@users.noreply.github.com
+  contents: write
 
 jobs:
-  build-packages:
+  source-archives:
     runs-on: ubuntu-latest
-    
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-      
-    - name: Clean previous builds
-      run: |
-        rm -rf build
-        rm -rf _build
-        
-    - name: Install dependencies
-      run: |
-        sudo apt update
-        sudo apt install -y rpm
-        
-    - name: Configure
-      run: |
-        mkdir build && cd build
-        cmake -DCMAKE_BUILD_TYPE=Release ..
-        
-    - name: Build
-      run: |
-        cd build
-        make clean
-        make -j2
-        
-    - name: Create packages
-      run: |
-        cd build
-        cpack -G "DEB" || echo "DEB package creation failed"
-        cpack -G "RPM" || echo "RPM package creation failed"
-        cpack -G "TGZ" || echo "TGZ package creation failed"
-        
-    - name: List artifacts
-      run: |
-        ls -la build/*.deb build/*.rpm build/*.tar.gz 2>/dev/null || echo "No packages found"
-        
-    - name: Create Release and Upload artifacts
-      uses: softprops/action-gh-release@v1
+    - uses: actions/checkout@v3
+    - run: |
+        git archive --format=tar.gz --output=solver-app-${{ github.ref_name }}-source.tar.gz HEAD
+        git archive --format=zip --output=solver-app-${{ github.ref_name }}-source.zip HEAD
+    - uses: softprops/action-gh-release@v1
       with:
-        files: |
-          build/*.deb
-          build/*.rpm
-          build/*.tar.gz
+        files: solver-app-*-source.*
         generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - run: sudo apt update && sudo apt install -y rpm
+    - run: mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release ..
+    - run: cd build && make -j2
+    - run: cd build && cpack -G DEB && cpack -G RPM && cpack -G TGZ
+    - uses: softprops/action-gh-release@v1
+      with:
+        files: build/*.deb build/*.rpm build/*.tar.gz
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  macos:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install latest CMake
+      run: |
+        brew update
+        brew install cmake
+        brew link --overwrite cmake
+    - run: mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release ..
+    - run: cd build && make -j2
+    - run: cd build && cpack -G DragNDrop
+    - uses: softprops/action-gh-release@v1
+      with:
+        files: build/*.dmg
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install WiX Toolset
+      run: choco install wixtoolset -y
+    - run: mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release ..
+    - run: cd build && cmake --build . --config Release
+    - run: cd build && cpack -G WIX
+    - uses: softprops/action-gh-release@v1
+      with:
+        files: build/*.msi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
