@@ -27,7 +27,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - uses: lukka/get-cmake@latest
     - run: sudo apt update && sudo apt install -y rpm
     - run: mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release ..
     - run: cd build && make -j2

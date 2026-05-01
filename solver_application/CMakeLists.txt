@@ -7,6 +7,12 @@ add_executable(solver_app equation.cpp)
 
 target_link_libraries(solver_app PRIVATE solver formatter_ex)
 
+install(TARGETS solver_app
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+)
+
 if(ENABLE_COVERAGE)
     target_compile_options(solver_app PRIVATE --coverage -g -O0)
     target_link_options(solver_app PRIVATE --coverage)
