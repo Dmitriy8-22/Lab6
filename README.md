@@ -1,4 +1,4 @@
-# Lab5: Banking System with Quadratic Equation Solver
+# Lab6: Banking System with Quadratic Equation Solver
 
 ## Components
 - **banking**: Transaction and Account management library
