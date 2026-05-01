@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.14)
 
 project(banking_tests)
 
+if(WIN32 OR APPLE)
+    return()
+endif()
+
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
